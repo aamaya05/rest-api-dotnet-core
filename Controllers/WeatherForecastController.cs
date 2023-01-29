@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace rest_api_dotnet_core.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class WeatherForecastController : ControllerBase
 {
     private static readonly string[] Summaries = new[]
@@ -13,20 +13,51 @@ public class WeatherForecastController : ControllerBase
 
     private readonly ILogger<WeatherForecastController> _logger;
 
+    private static List<WeatherForecast> listWeatherForecast = new List<WeatherForecast>();
+
     public WeatherForecastController(ILogger<WeatherForecastController> logger)
     {
         _logger = logger;
-    }
 
-    [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
-    {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        if (listWeatherForecast == null || !listWeatherForecast.Any())
+        {
+            listWeatherForecast = Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
             Date = DateTime.Now.AddDays(index),
             TemperatureC = Random.Shared.Next(-20, 55),
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         })
-        .ToArray();
+        .ToList();
+        }
+    }
+
+    [HttpGet(Name = "GetWeatherForecast")]
+    public IEnumerable<WeatherForecast> Get()
+    {
+        return listWeatherForecast;
+    }
+
+    [HttpPost]
+    public IActionResult Post(WeatherForecast weatherForecast)
+    {
+        listWeatherForecast.Add(weatherForecast);
+
+        return Ok();
+    }
+
+    [HttpPut]
+    public IActionResult Put(int id)
+    {
+        listWeatherForecast.RemoveAt(id);
+
+        return Ok();
+    }
+
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id)
+    {
+        listWeatherForecast.RemoveAt(id);
+
+        return Ok();
     }
 }
